@@ -10,7 +10,8 @@ class Duration(Enum):
 
 
 class PastedBase(SQLModel):
-    content: str
+    # Roughly 10 Kb in Si system? It seems sensible.
+    content: str = Field(max_length=10 * 1024, nullable=False)
 
 
 class PastedCreate(PastedBase):
@@ -18,13 +19,12 @@ class PastedCreate(PastedBase):
 
 
 class PastedPublic(PastedBase):
-    id: int
     shortcode: str
 
 
 class Pasted(PastedBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    shortcode: str = Field(index=True, unique=True)
+    shortcode: str = Field(max_length=8, index=True, unique=True)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     view_count: int = Field(default=0)
     is_deleted: bool = Field(default=False, index=True)

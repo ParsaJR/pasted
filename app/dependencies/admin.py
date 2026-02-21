@@ -9,6 +9,7 @@ from app.models.management import Admin
 
 oauth2_scheme = OAuth2PasswordBearer("/token")
 
+
 async def get_current_active_admin(
     token: Annotated[str, Depends(oauth2_scheme)],
     session: SessionDep,
@@ -29,14 +30,20 @@ async def get_current_active_admin(
     if not sub:
         raise generic_exception
 
-    admin = session.exec(
-        select(Admin).where(Admin.email == sub)
-    ).first()
+    password_change_required = payload.get("password_change_required")
+
+    if password_change_required:
+        raise HTTPException(
+            status_code=403,  # 403 means, "i know who you are, but ..."
+            detail="Reset your password, before doing anything else",
+        )
+
+    admin = session.exec(select(Admin).where(Admin.email == sub)).first()
 
     if not admin:
         raise generic_exception
 
-    return admin  
+    return admin
 
 
-ProtectedRouteDep = Annotated[Admin,Depends(get_current_active_admin)]
+ProtectedRouteDep = Annotated[Admin, Depends(get_current_active_admin)]

@@ -10,8 +10,8 @@ def create_super_admin():
 
         admin = AdminCreate(
             username="admin",
-            plain_password="admin",
-            disabled=False,
+            plain_password="admin1234",
+            repeat_password="admin1234",
             email="admin@admin.com",
         )
 
