@@ -1,13 +1,8 @@
 from datetime import datetime, timezone, timedelta
-from typing import Annotated
-from fastapi import Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
+from typing import Any
 from pwdlib import PasswordHash
 import jwt
-from sqlmodel import select
 from app.core import config
-from app.dependencies.database import SessionDep
-from app.models.management import Admin
 
 
 JWT_SECRET = config.settings.JWT_Secret
@@ -24,7 +19,9 @@ def get_password_hash(plain_password: str) -> str:
     return password_hash.hash(plain_password)
 
 
-def create_access_token(data: dict, expires_at_delta: timedelta | None = None) -> str:
+def create_access_token(
+    data: dict[str, Any], expires_at_delta: timedelta | None = None
+) -> str:
     """Returns the "JWT Encoded json" To be returned to the user."""
 
     to_encode = data.copy()

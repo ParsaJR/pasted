@@ -41,9 +41,9 @@ class AdminService:
             targetAdmin = Admin(
                 username=admin.username,
                 hashed_password=password,
-                disabled=admin.disabled,
+                disabled=False,
                 email=admin.email,
-                needs_to_reset_password=True,  ## Always
+                password_reset_required=True,  ## Always
             )
 
             self.db.add(targetAdmin)
