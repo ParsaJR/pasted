@@ -1,11 +1,14 @@
 from datetime import timedelta
+from http import HTTPStatus
 from typing import Annotated
 
 from app.core import config, security
 from app.schemas.jwt import Token
 from app.service.adminService import AdminService, get_admin_service
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
+
+from app.service.exceptions import GenericAuthError
 
 router = APIRouter(tags=["Pasted: Management Auth"], include_in_schema=False)
 
@@ -18,7 +21,11 @@ async def login_and_get_token(
     admin_service: AdminServiceDep,
 ):
 
-    admin = admin_service.authenticate(form_data.username, form_data.password)
+    try:
+        admin = admin_service.authenticate(form_data.username, form_data.password)
+
+    except GenericAuthError:
+        raise HTTPException(HTTPStatus.FORBIDDEN)
 
     access_token_expires_at = timedelta(minutes=config.settings.JWT_TTL)
 

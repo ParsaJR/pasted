@@ -3,6 +3,9 @@ from logging.config import fileConfig
 from sqlalchemy import URL, engine_from_config
 from sqlalchemy import pool
 
+from app.models import management
+from app.models import pasted
+
 from alembic import context
 from sqlmodel import SQLModel
 from app.core import config as settings
@@ -31,8 +34,6 @@ if config.config_file_name is not None:
 
 # add your model's MetaData object here
 # for 'autogenerate' support
-from app.models.management import Admin
-from app.models.pasted import Pasted
 
 target_metadata = SQLModel.metadata
 

@@ -1,10 +1,11 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Annotated
 from fastapi import Depends, HTTPException
 from sqlmodel import Session, select
 
 from app import db
-from app.models.pasted import Pasted, PastedCreate
+from app.models.pasted import Duration, Pasted, PastedCreate, PastedExpiryDuration
+from app.service.exceptions import ServiceError
 from app.utils import utils
 
 
@@ -27,15 +28,19 @@ class PastedService:
 
         return pasted
 
-    def get_pasted_by_id(self, pasted_id: int) -> Pasted:
+    def get_pasted_by_id(self, pasted_id: int) -> Pasted|None:
         statement = (
             select(Pasted)
             .where(Pasted.id == pasted_id)
-            .where(Pasted.is_deleted == False)
+            .where(Pasted.is_deleted == False)  # noqa: E712
         )
         pasted_item = self.db.exec(statement).first()
         if not pasted_item:
-            raise HTTPException(status_code=404, detail="Paste not found")
+            return None
+
+        if pasted_item.duration == Duration.oneTime or pasted_item.is_one_time:
+            if pasted_item.view_count >= 1:
+                return None
 
         pasted_item.view_count += 1
 
@@ -45,15 +50,24 @@ class PastedService:
 
         return pasted_item
 
-    def get_pasted_by_shortcode(self, shortcode: str) -> Pasted:
+    def get_pasted_by_shortcode(self, shortcode: str) -> Pasted|None:
         statement = (
             select(Pasted)
             .where(Pasted.shortcode == shortcode)
-            .where(Pasted.is_deleted == False)
+            .where(Pasted.is_deleted == False)  # noqa: E712
         )
+
         pasted_item = self.db.exec(statement).first()
+
         if not pasted_item:
-            raise HTTPException(status_code=404, detail="Paste not found")
+            return None
+
+
+        if pasted_item.duration == Duration.oneTime or pasted_item.is_one_time:
+            if pasted_item.view_count >= 1:
+                assert pasted_item.id is not None
+                _ = self.delete_pasted(pasted_item.id)
+                return None
 
         pasted_item.view_count += 1
 
@@ -64,11 +78,25 @@ class PastedService:
         return pasted_item
 
     def create_pasted(self, p: PastedCreate) -> Pasted:
+        day_amount_statement = select(PastedExpiryDuration).where(PastedExpiryDuration.code == p.expiry_code)
+
+        day_amount = self.db.exec(day_amount_statement).first()
+        if not day_amount:
+            raise ServiceError("Internal server error")
+            
+        
+
+        now = datetime.now(timezone.utc)
+
+        expiry_date = now + timedelta(days=day_amount.days)
+
         db_paste = Pasted(
             **p.model_dump(),
             shortcode=utils.generateShortCode(),
-            created_at=datetime.now(timezone.utc),
+            created_at=now,
+            expires_at=expiry_date,
         )
+
         self.db.add(db_paste)
         self.db.commit()
         self.db.refresh(db_paste)

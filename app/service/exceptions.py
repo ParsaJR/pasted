@@ -3,10 +3,12 @@ class ServiceError(Exception):
 
     pass
 
+class GenericAuthError(ServiceError):
+    pass
 
-class AuthenticationError(ServiceError):
+class AuthenticationError(GenericAuthError):
     pass
 
 
-class AuthorizationError(ServiceError):
+class AuthorizationError(GenericAuthError):
     pass

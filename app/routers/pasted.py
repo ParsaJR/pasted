@@ -1,12 +1,7 @@
-from datetime import datetime, timezone
-
-from sqlmodel import select
-
-from app.dependencies.database import SessionDep
-from app.models.pasted import Pasted, PastedCreate, PastedPublic
-from app.service.pastedService import PastedServiceDep, get_pasted_service
-from app.utils import utils
-from fastapi import APIRouter, HTTPException
+from fastapi.exceptions import HTTPException
+from app.models.pasted import Duration, PastedCreate, PastedPublic
+from app.service.pastedService import PastedServiceDep
+from fastapi import APIRouter
 
 router = APIRouter(
     tags=["Pasted: Public routes"],
@@ -22,6 +17,8 @@ async def get_pasted_by_id(pasted_id: int, pasted_service: PastedServiceDep):
 @router.get("/pastes/", response_model=PastedPublic, status_code=200)
 async def get_pasted_by_shortcode(shortcode: str, pasted_service: PastedServiceDep):
     pasted_item = pasted_service.get_pasted_by_shortcode(shortcode)
+    if pasted_item is None:
+         raise HTTPException(status_code=404, detail="Paste not found")
     return pasted_item
 
 

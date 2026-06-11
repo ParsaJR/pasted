@@ -1,5 +1,6 @@
 import time
 from contextlib import asynccontextmanager
+import fastapi_cdn_host
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.encoders import jsonable_encoder
@@ -13,6 +14,7 @@ from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from app.core import logs
+from app.db import test_engine_connectivity
 from app.routers import auth, management, pasted
 
 
@@ -20,18 +22,22 @@ from app.routers import auth, management, pasted
 async def lifespan(app: FastAPI):
     # db.create_db_and_tables()
     logs.setup_logger()
+    test_engine_connectivity()
     yield
 
+app = FastAPI(lifespan=lifespan,root_path="/api")
 
-app = FastAPI(lifespan=lifespan)
+fastapi_cdn_host.patch_docs(app) # This is beneficial during the Iran's internet distruptions
 
+app.include_router(auth.router)
+app.include_router(pasted.router)
+app.include_router(management.router)
 
 #######################
 # Logging middlewares #
 #######################
 
 logger = logs.get_logger()
-
 
 @app.middleware("http")
 async def log_process_time(request: Request, call_next):
@@ -97,6 +103,3 @@ async def validation_exception_handler(request, exc):
     return await request_validation_exception_handler(request, exc)
 
 
-app.include_router(auth.router)
-app.include_router(pasted.router)
-app.include_router(management.router)

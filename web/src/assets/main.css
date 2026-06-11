@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --text-primary: #000000;
+  --color-btn-primary: #efeff3;
+  --color-code-primary: #000000;
+}
+
+@theme {
+  --font-serif: 'Inter Variable', sans-serif;
+  --font-mono: 'JetBrains Mono Variable', monospace;
+}
+
+html, body {
+    @apply font-serif;
+    background-color: var(--ui-bg);
+}
+
+.code_text_area {
+    @apply font-mono;
+}
+
+:root {
+  --ui-bg: var(--ui-color-neutral-50);
+}
+
+.dark {
+  --ui-bg: var(--ui-color-neutral-950);
+}

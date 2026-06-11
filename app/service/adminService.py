@@ -1,15 +1,35 @@
-from multiprocessing import AuthenticationError
 from fastapi import Depends
 from sqlmodel import Session, select
 from app import db
 from app.core import security
 from app.models.management import Admin, AdminCreate
-from app.service.exceptions import AuthorizationError
+from app.models.pasted import PastedExpiryDuration
+from app.schemas.management import APICapabilities, ExpiryDuration
+from app.service.exceptions import AuthorizationError,AuthenticationError
 
 
 class AdminService:
     def __init__(self, session: Session):
         self.db = session
+
+
+    def get_api_capabilities(self) -> APICapabilities:
+
+        statement = select(PastedExpiryDuration)
+
+        durations = self.db.exec(statement).all()
+
+        expiry_durations: list[ExpiryDuration] = []
+
+        for duration in durations:
+            expiry_durations.append(
+                ExpiryDuration(
+                    name=duration.name,
+                    code=duration.code,
+                )
+            )
+
+        return APICapabilities(expiry_durations=expiry_durations)
 
     def authenticate(
         self,

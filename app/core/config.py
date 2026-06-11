@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     ## Database related
     DatabaseHost: str = "localhost"
     DatabasePort: int = 5432  # Postgres uses 5432 by default, for active listen port.
-    DatabasePassword: str = "mysecretpassword"
+    DatabasePassword: str = "secret"
     DatabaseUser: str = "postgres"
     DatabaseName: str = "pasted"
 

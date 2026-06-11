@@ -19,7 +19,7 @@ def main():
         print(f"Something went wrong: {e}")
         return
 
-    print("Done!")
+    print("Done! Initial super admin has been created.")
 
 
 if __name__ == "__main__":

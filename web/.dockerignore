@@ -1,0 +1,18 @@
+.git
+*Dockerfile*
+*docker-compose*
+node_modules
+.gitignore
+*.log
+*.ps1
+*.cmd
+*.sh
+
+
+# -------------------------------
+# Docker-related files!
+# -------------------------------
+Dockerfile
+.dockerignore
+docker-compose.yml
+docker-compose.override.yml
