@@ -62,20 +62,25 @@ watch(
 
 async function save() {
 	if (!formState.code) {
-		useToast("An empty text, cannot be saved.", 'error')
+		useToast("An empty text, cannot be saved.", 'info')
 		return
 	}
+	if (!formState.duration) {
+	    useToast("Please select an expiry duration.", 'info')
+	    return
+	}
+
 	if (formState.duration) {
 		const code = formState.code
-	    const duration = formState.duration
-	    const is_one_time = formState.is_one_time
+		const duration = formState.duration
+		const is_one_time = formState.is_one_time
 
 		try {
-		    const result = await useAPI().postPasted({
-			content: code,
-			expiry_code: duration,
-			is_one_time: is_one_time
-		    })
+			const result = await useAPI().postPasted({
+				content: code,
+				expiry_code: duration,
+				is_one_time: is_one_time
+			})
 			appState.toggleViewMode()
 
 			router.push(result)
@@ -102,7 +107,8 @@ async function save() {
 			</template>
 		</Suspense>
 		<RouterView ref="target" name="RightSidebar" v-model:selectedDuration="formState.duration"
-			@on-clear="formState.mutateCode('')" @on-save="save" @on-fork="appState.toggleViewMode()" v-model:is_one_time="formState.is_one_time">
+			@on-clear="formState.mutateCode('')" @on-save="save" @on-fork="appState.toggleViewMode()"
+			v-model:is_one_time="formState.is_one_time">
 		</RouterView>
 	</div>
 </template>
