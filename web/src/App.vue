@@ -87,7 +87,7 @@ async function save() {
 		}
 		catch (error) {
 			const err = error as ApiError
-			useToast(err.statusText, 'error')
+			useToast(err.detail, 'error')
 		}
 
 	}
