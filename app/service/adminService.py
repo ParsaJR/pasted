@@ -2,16 +2,17 @@ from fastapi import Depends
 from sqlmodel import Session, select
 from app import db
 from app.core import security
-from app.models.management import Admin, AdminCreate
+from app.models.management import Admin, AdminCreate, Branding
 from app.models.pasted import PastedExpiryDuration
-from app.schemas.management import APICapabilities, ExpiryDuration
-from app.service.exceptions import AuthorizationError,AuthenticationError
+from app.schemas.management import APIBranding, APICapabilities, ExpiryDuration
+from app.service.exceptions import AuthorizationError,AuthenticationError, ServiceError
 
 
 class AdminService:
+    """Everything about application administration/configuration."""
+
     def __init__(self, session: Session):
         self.db = session
-
 
     def get_api_capabilities(self) -> APICapabilities:
 
@@ -30,6 +31,43 @@ class AdminService:
             )
 
         return APICapabilities(expiry_durations=expiry_durations)
+
+    def get_branding(self) -> APIBranding:
+        statement = select(Branding)
+
+        branding = self.db.exec(statement).first()
+
+        if not branding:
+            raise ServiceError("Branding not found!")
+
+        result: APIBranding = APIBranding(
+            app_name=branding.app_name,
+            privacy_policy=branding.privacy_policy,
+            support_email=branding.support_email,
+        )
+
+
+        return result
+
+
+    def update_branding(self, b: APIBranding):
+        statement = select(Branding)
+
+        branding = self.db.exec(statement).first()
+
+        if not branding:
+            raise ServiceError("Branding not found!")
+
+        branding.app_name = b.app_name
+        branding.privacy_policy = b.privacy_policy
+        branding.support_email = b.support_email
+
+        self.db.add(branding)
+        self.db.commit()
+        self.db.refresh(branding)
+
+        return branding
+
 
     def authenticate(
         self,
@@ -94,7 +132,6 @@ class AdminService:
 
         except Exception:
             raise
-
 
 def get_admin_service(db: Session = Depends(db.get_session)) -> AdminService:
     return AdminService(db)
