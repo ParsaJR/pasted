@@ -20,7 +20,6 @@ onBeforeMount(async () => {
 
 	    	const branding = await useAPI().getBranding()
 	    	appState.populateBranding(branding)
-	    	document.title = appState.serviceName
 	}
 	catch (error) {
 		console.log(error)
