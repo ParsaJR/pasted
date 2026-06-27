@@ -43,4 +43,4 @@ class Pasted(PastedBase, table=True):
     view_count: int = Field(default=0)
     is_deleted: bool = Field(default=False, index=True)
     is_one_time: bool = Field(default=False,index=True)
-    duration: Duration
+    duration: Duration = Field(nullable=True)
