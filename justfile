@@ -1,3 +1,16 @@
+###########
+# Project #
+###########
+
+[working-directory: 'web']
+run-vue:
+	@pnpm run dev
+
+
+run-api:
+	@uv run fastapi dev
+
+
 #############
 # Database  #
 #############
